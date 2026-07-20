@@ -10,6 +10,8 @@ enable nira-context.service
 enable nira-action.service
 enable nira-ai.service
 enable nira-ai.socket
+enable nira-hardware.service
+enable nira-model.service
 
 # NetworkManager is NiraOS's sole network configuration owner. Running
 # systemd-networkd in parallel creates ambiguous ownership and background

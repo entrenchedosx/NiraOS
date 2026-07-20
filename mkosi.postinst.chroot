@@ -97,9 +97,9 @@ systemctl mask NetworkManager-wait-online.service
 # requiring a per-user `systemctl --user enable`.  The notification service
 # is what makes the shell's toast UI actually receive toasts from apps.
 install -d -m 0755 /etc/systemd/user/default.target.wants
-ln -sf ../nira-notification.service /etc/systemd/user/default.target.wants/nira-notification.service 2>/dev/null || true
-ln -sf ../nira-settings.service    /etc/systemd/user/default.target.wants/nira-settings.service    2>/dev/null || true
-ln -sf ../nira-action.service      /etc/systemd/user/default.target.wants/nira-action.service      2>/dev/null || true
+ln -sf /usr/lib/systemd/user/nira-notification.service /etc/systemd/user/default.target.wants/nira-notification.service
+ln -sf /usr/lib/systemd/user/nira-settings.service    /etc/systemd/user/default.target.wants/nira-settings.service
+ln -sf /usr/lib/systemd/user/nira-action.service      /etc/systemd/user/default.target.wants/nira-action.service
 
 # NOTE: We DO NOT enable nira-compositor or nira-shell as systemd services!
 # They are launched by the user's Wayland session wrapper (start-nira-session)

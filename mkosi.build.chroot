@@ -59,6 +59,7 @@ cp "$SRCDIR/scripts/systemd/nira-ai.service"      "$DESTDIR/usr/lib/systemd/syst
 cp "$SRCDIR/scripts/systemd/nira-context.service"  "$DESTDIR/usr/lib/systemd/system/"
 cp "$SRCDIR/scripts/systemd/nira-action.service"   "$DESTDIR/usr/lib/systemd/system/"
 cp "$SRCDIR/scripts/systemd/nira-permission.service" "$DESTDIR/usr/lib/systemd/system/"
+cp "$SRCDIR/scripts/systemd/nira-hardware.service" "$DESTDIR/usr/lib/systemd/system/"
 # nira-model.service provisions/downloads the GGUF model if it is missing at
 # boot.  It is a fallback: the image bakes default.gguf in at build time, but
 # this unit restores the model after a corrupt download, an image resize that
@@ -71,7 +72,7 @@ chmod 0644 "$DESTDIR/usr/lib/systemd/system/"nira-*.service
 
 # USER-level services (optional, for services that run in the user session)
 mkdir -p "$DESTDIR/usr/lib/systemd/user"
-cp "$SRCDIR/scripts/systemd/user/"* "$DESTDIR/usr/lib/systemd/user/" 2>/dev/null || true
+cp "$SRCDIR/systemd/user/"* "$DESTDIR/usr/lib/systemd/user/" 2>/dev/null || true
 
 # 4. Install Visual Assets
 echo "Installing Visual Assets..."
@@ -119,8 +120,8 @@ mkdir -p "$nira_asset_dir/wallpapers"
 cp -a "$SRCDIR/assets/wallpapers/." "$nira_asset_dir/wallpapers/"
 
 # 5. Provision AI model into /var/lib/niraos/models
-echo "Installing AI model..."
-mkdir -p "$DESTDIR/var/lib/niraos/models"
-cp "$SRCDIR/assets/models/Phi-4-mini-instruct-Q4_K_M.gguf" "$DESTDIR/var/lib/niraos/models/default.gguf"
+# Note: this is a 2.5 GB copy from NTFS that can cause the build to stall.
+# We skip it here and inject the model into the raw image post-build.
+echo "Skipping AI model copy (injected post-build)..."
 
 echo "NiraOS build complete."

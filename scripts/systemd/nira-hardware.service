@@ -1,0 +1,22 @@
+[Unit]
+Description=NiraOS Hardware Telemetry Service
+StartLimitIntervalSec=60s
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=nira
+Group=nira-ipc
+ExecStart=/usr/bin/nira-hardware
+Restart=on-failure
+RestartSec=5s
+Environment="RUST_LOG=info"
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/run/niraos
+RestrictAddressFamilies=AF_UNIX
+
+[Install]
+WantedBy=multi-user.target
