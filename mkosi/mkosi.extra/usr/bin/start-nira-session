@@ -18,7 +18,9 @@ export QT_LOGGING_RULES="${QT_LOGGING_RULES:-qt.qpa.eglfs.*=true;qt.qpa.wayland.
 export QT_MESSAGE_PATTERN="[%{time h:mm:ss.zzz} %{type} %{category}] %{message}"
 
 # ── Per-process log files ────────────────────────────────────────────────────
-LOG_DIR="${XDG_RUNTIME_DIR:-/tmp}"
+# Use persistent /var/log/niraos/ from the start so logs survive the session
+# cleanup of /run/user/UID (tmpfs wiped by systemd on session close).
+LOG_DIR="/var/log/niraos"
 SESSION_LOG="$LOG_DIR/nira-session.log"
 COMPOSITOR_LOG="$LOG_DIR/nira-compositor.log"
 SHELL_LOG="$LOG_DIR/nira-shell.log"
