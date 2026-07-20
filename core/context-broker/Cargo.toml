@@ -1,0 +1,21 @@
+[package]
+name = "context-broker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+sys-utils = { path = "../sys-utils", features = ["uds"] }
+anyhow.workspace = true
+prost.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+sysinfo.workspace = true
+tokio-stream = "0.1"
+
+[build-dependencies]
+tonic-build.workspace = true
+
+

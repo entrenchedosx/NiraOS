@@ -1,0 +1,126 @@
+#!/bin/bash
+# NiraOS image build script.
+# Runs inside the mkosi build sandbox ($SRCDIR = source tree, read via 9p on
+# WSL setups).  All build artifacts go to $BUILDDIR (mkosi BuildDirectory=,
+# native filesystem, incremental across builds); never write into $SRCDIR.
+set -e
+
+echo "Compiling NiraOS components in mkosi environment..."
+
+: "${BUILDDIR:=/tmp/nira-build}"
+CARGO_TARGET_DIR="$BUILDDIR/cargo-target"
+DESKTOP_BUILD_DIR="$BUILDDIR/desktop"
+export CARGO_TARGET_DIR
+
+# 1. Build and Install Rust Daemons
+echo "Building Rust binaries..."
+cd "$SRCDIR"
+# Do not inherit a build-host `target-cpu=native` setting.  The image must boot
+# on a CPU whose feature set is no newer than the target machine or QEMU
+# (TCG lacks host-specific ISA extensions; ggml honors this via
+# llama-cpp-sys-2, which maps target-cpu to GGML_NATIVE/-march).
+#
+# DESTDIR must NOT leak into cargo: mkosi exports DESTDIR=/work/dest for the
+echo "Cleaning llama-cpp build cache..."
+rm -rf /tmp/nira-build/cargo-target/release/build/llama-*
+rm -rf /tmp/nira-build/cargo-target/release/deps/libllama*
+cargo clean -p llama-cpp-sys-2 || true
+env -u DESTDIR CFLAGS="-march=x86-64" CXXFLAGS="-march=x86-64" RUSTFLAGS="-C target-cpu=x86-64" cargo build -j 2 --locked --release --workspace
+
+echo "Installing Rust binaries..."
+mkdir -p "$DESTDIR/usr/bin"
+cp "$CARGO_TARGET_DIR/release/ai-daemon"            "$DESTDIR/usr/bin/nira-ai"
+cp "$CARGO_TARGET_DIR/release/context-broker"       "$DESTDIR/usr/bin/nira-context"
+cp "$CARGO_TARGET_DIR/release/permission-manager"   "$DESTDIR/usr/bin/nira-permission"
+cp "$CARGO_TARGET_DIR/release/action-manager"       "$DESTDIR/usr/bin/nira-action"
+cp "$CARGO_TARGET_DIR/release/model-manager"        "$DESTDIR/usr/bin/nira-model"
+cp "$CARGO_TARGET_DIR/release/settings-service"     "$DESTDIR/usr/bin/nira-settings"
+cp "$CARGO_TARGET_DIR/release/hardware-service"     "$DESTDIR/usr/bin/nira-hardware"
+cp "$CARGO_TARGET_DIR/release/notification-service" "$DESTDIR/usr/bin/nira-notification"
+cp "$CARGO_TARGET_DIR/release/nira-debug"         "$DESTDIR/usr/bin/nira-debug"
+cp "$CARGO_TARGET_DIR/release/nira-gpu-test"      "$DESTDIR/usr/bin/nira-gpu-test"
+
+# 2. Build Qt Desktop Stack (gRPC proto lib + compositor + shell)
+# One root CMake project so nira-shell can link the generated
+# nira-ai-proto library (see CMakeLists.txt at the repository root).
+echo "Building Qt Desktop Stack (compositor + shell)..."
+cmake -G Ninja -S "$SRCDIR" -B "$DESKTOP_BUILD_DIR" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr
+ninja -j 2 -C "$DESKTOP_BUILD_DIR"
+DESTDIR="$DESTDIR" ninja -j 2 -C "$DESKTOP_BUILD_DIR" install
+
+# 3. Install systemd units
+# SYSTEM-level services: only the headless background daemons
+echo "Installing Systemd Units..."
+mkdir -p "$DESTDIR/usr/lib/systemd/system"
+cp "$SRCDIR/scripts/systemd/nira-ai.socket"       "$DESTDIR/usr/lib/systemd/system/"
+cp "$SRCDIR/scripts/systemd/nira-ai.service"      "$DESTDIR/usr/lib/systemd/system/"
+cp "$SRCDIR/scripts/systemd/nira-context.service"  "$DESTDIR/usr/lib/systemd/system/"
+cp "$SRCDIR/scripts/systemd/nira-action.service"   "$DESTDIR/usr/lib/systemd/system/"
+cp "$SRCDIR/scripts/systemd/nira-permission.service" "$DESTDIR/usr/lib/systemd/system/"
+# nira-model.service provisions/downloads the GGUF model if it is missing at
+# boot.  It is a fallback: the image bakes default.gguf in at build time, but
+# this unit restores the model after a corrupt download, an image resize that
+# dropped assets, or a first boot of a minimal image.
+cp "$SRCDIR/scripts/systemd/nira-model.service"   "$DESTDIR/usr/lib/systemd/system/"
+chmod 0644 "$DESTDIR/usr/lib/systemd/system/"nira-*.socket
+chmod 0644 "$DESTDIR/usr/lib/systemd/system/"nira-*.service
+# NOTE: nira-compositor.service and nira-shell.service are NOT installed as
+# system services. They are launched by the greetd session wrapper.
+
+# USER-level services (optional, for services that run in the user session)
+mkdir -p "$DESTDIR/usr/lib/systemd/user"
+cp "$SRCDIR/scripts/systemd/user/"* "$DESTDIR/usr/lib/systemd/user/" 2>/dev/null || true
+
+# 4. Install Visual Assets
+echo "Installing Visual Assets..."
+nira_asset_dir=$(realpath -m "$DESTDIR/usr/share/niraos")
+if [[ "$nira_asset_dir" == "/usr/share/niraos" \
+      || "$nira_asset_dir" != */usr/share/niraos ]]; then
+    echo "Refusing to clean unexpected asset destination: $nira_asset_dir" >&2
+    exit 1
+fi
+# BuildDirectory is persistent across mkosi runs. Recreate this one staged
+# directory so removed payloads cannot leak into a supposedly fresh image.
+rm -rf -- "$nira_asset_dir"
+mkdir -p "$nira_asset_dir"
+
+# Top-level visual assets (logo, splash, default+lock wallpapers, AI avatar,
+# default user avatar) are shipped via mkosi.extra and are already present at
+# this point.  The previous build script tried to `install` them from
+# $SRCDIR/assets/ — but those files live in mkosi.extra, not assets/, so the
+# install commands were dead code that would fail under `set -e`.  They have
+# been removed.
+
+# Install the full NiraOS icon library.  These are the production SVG icons
+# plus PNG fallbacks at 8 resolutions (16/24/32/48/64/128/256/512).  Apps
+# that bundle icons via Qt resources (qrc) do not need these at runtime, but
+# installing them gives QIcon::fromTheme() a fallback and lets third-party
+# apps reference NiraOS-specific icons by name.
+for subdir in \
+    icons \
+    nira \
+    desktop \
+    system-ui \
+    filemanager \
+    notepad \
+    cursors \
+    animations
+do
+    if [[ -d "$SRCDIR/assets/$subdir" ]]; then
+        mkdir -p "$nira_asset_dir/$subdir"
+        cp -a "$SRCDIR/assets/$subdir/." "$nira_asset_dir/$subdir/"
+    fi
+done
+
+# Wallpapers: copy the full set (SVG previews + JPG/PNG renders at 4K).
+mkdir -p "$nira_asset_dir/wallpapers"
+cp -a "$SRCDIR/assets/wallpapers/." "$nira_asset_dir/wallpapers/"
+
+# 5. Provision AI model into /var/lib/niraos/models
+echo "Installing AI model..."
+mkdir -p "$DESTDIR/var/lib/niraos/models"
+cp "$SRCDIR/assets/models/Phi-4-mini-instruct-Q4_K_M.gguf" "$DESTDIR/var/lib/niraos/models/default.gguf"
+
+echo "NiraOS build complete."

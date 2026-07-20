@@ -1,0 +1,11 @@
+[Unit]
+Description=Nira Wayland Compositor
+BindsTo=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/nira-compositor
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=graphical-session.target

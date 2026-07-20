@@ -1,0 +1,33 @@
+# NiraOS systemd preset policy.
+#
+# mkosi applies all distribution presets near the end of image construction.
+# Rules here take precedence over Arch's later defaults for the units NiraOS
+# owns; units not mentioned here retain the distribution policy.
+enable greetd.service
+enable NetworkManager.service
+enable nira-permission.service
+enable nira-context.service
+enable nira-action.service
+enable nira-ai.service
+enable nira-ai.socket
+
+# NetworkManager is NiraOS's sole network configuration owner. Running
+# systemd-networkd in parallel creates ambiguous ownership and background
+# work, while wait-online would unnecessarily hold the graphical boot when a
+# desktop is offline.
+disable systemd-networkd.service
+disable systemd-networkd.socket
+disable systemd-networkd-varlink.socket
+disable systemd-networkd-varlink-metrics.socket
+disable systemd-networkd-resolve-hook.socket
+disable systemd-networkd-wait-online.service
+disable NetworkManager-wait-online.service
+
+# Accounts are currently backed by /etc/passwd; systemd-homed is not part of
+# the supported user-management architecture yet.
+disable systemd-homed.service
+disable systemd-homed-activate.service
+# Preset template units, not a single generated instance. This also removes
+# package-created tty1 links when preset-all is applied to a fresh image.
+disable getty@*.service
+disable autovt@*.service

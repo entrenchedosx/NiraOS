@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=NiraOS Shell
+Comment=NiraOS desktop shell (Wayland)
+Exec=nira-shell
+Icon=nira-logo
+Categories=System;
+NoDisplay=true
+StartupNotify=false
+Terminal=false

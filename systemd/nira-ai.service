@@ -1,0 +1,16 @@
+[Unit]
+Description=NiraOS AI Daemon (llama.cpp Engine)
+Requires=nira-context.service nira-ai.socket
+After=nira-context.service nira-ai.socket
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+ExecStart=/usr/bin/nira-ai
+Restart=always
+Sockets=nira-ai.socket
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

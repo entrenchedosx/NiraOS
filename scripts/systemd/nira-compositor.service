@@ -1,0 +1,16 @@
+[Unit]
+Description=NiraOS Compositor (Wayland Display Server)
+Requires=nira-ai.service
+After=nira-ai.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/nira-compositor
+Restart=on-failure
+RestartSec=2s
+# Hardening
+CapabilityBoundingSet=CAP_SYS_TTY_CONFIG CAP_SYS_ADMIN
+LimitNOFILE=65536
+
+[Install]
+WantedBy=default.target

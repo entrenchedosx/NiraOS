@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package niraos.actions.v1;
+
+service ActionService {
+    rpc ExecuteAction (ActionRequest) returns (ActionResponse);
+}
+
+enum RiskLevel {
+    LOW = 0;
+    MEDIUM = 1;
+    HIGH = 2;
+}
+
+message ActionRequest {
+    string action_id = 1;
+    RiskLevel risk = 2;
+    map<string, string> parameters = 3;
+    string reason = 4;
+}
+
+
+message ActionResponse {
+    bool success = 1;
+    string message = 2;
+}

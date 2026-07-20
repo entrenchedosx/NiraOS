@@ -1,0 +1,29 @@
+syntax = "proto3";
+package niraos.context.v1;
+
+import "v1/common.proto";
+
+message ContextRequest {
+    string app_id = 1;
+}
+
+message ContextResponse {
+    string active_window_title = 1;
+    string selected_text = 2;
+    string current_file_path = 3;
+    niraos.common.v1.Error error = 4;
+}
+
+message ContextFilter {
+    repeated string event_types = 1;
+}
+
+message ContextUpdate {
+    string event_type = 1;
+    string payload_json = 2;
+}
+
+service ContextService {
+    rpc GetContext(ContextRequest) returns (ContextResponse);
+    rpc SubscribeContext(ContextFilter) returns (stream ContextUpdate);
+}

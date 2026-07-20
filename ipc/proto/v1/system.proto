@@ -1,0 +1,22 @@
+syntax = "proto3";
+package niraos.system.v1;
+
+import "v1/common.proto";
+
+message SystemStatusRequest {}
+
+message SystemStatusResponse {
+    float cpu_usage_percent = 1;
+    float gpu_usage_percent = 2;
+    uint64 memory_used_mb = 3;
+    uint64 memory_total_mb = 4;
+    uint64 storage_used_mb = 5;
+    uint64 storage_total_mb = 6;
+    float battery_percent = 7;
+    bool is_charging = 8;
+    bool network_connected = 9;
+}
+
+service SystemService {
+    rpc GetStatus(SystemStatusRequest) returns (SystemStatusResponse);
+}

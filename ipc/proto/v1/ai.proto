@@ -1,0 +1,56 @@
+syntax = "proto3";
+package niraos.ai.v1;
+
+import "v1/common.proto";
+
+message GenerateRequest {
+    string prompt = 1;
+    string model = 2;
+    float temperature = 3;
+    int32 max_tokens = 4;
+    // Context ID to retrieve state from Context Broker
+    string context_id = 5; 
+}
+
+message AIResponse {
+    string text = 1;
+    bool is_finished = 2;
+    int32 tokens_used = 3;
+    niraos.common.v1.Error error = 4;
+}
+
+message StatusRequest {}
+
+message AIStatus {
+    string active_model = 1;
+    bool is_loading = 2;
+    float vram_usage_mb = 3;
+    string mode = 4;
+    string state = 5;
+}
+
+message SetModeRequest {
+    string mode = 1;
+}
+
+message SetModeResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+message SetInactivityTimeoutRequest {
+    int32 timeout_secs = 1;
+}
+
+message SetInactivityTimeoutResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+service AIService {
+    rpc Generate(GenerateRequest) returns (AIResponse);
+    rpc StreamGenerate(GenerateRequest) returns (stream AIResponse);
+    rpc GetStatus(StatusRequest) returns (AIStatus);
+    rpc SetMode(SetModeRequest) returns (SetModeResponse);
+    rpc SetInactivityTimeout(SetInactivityTimeoutRequest) returns (SetInactivityTimeoutResponse);
+}

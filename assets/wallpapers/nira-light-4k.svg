@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3840 2160" width="100%" height="100%">
+  <defs>
+    <radialGradient id="lightBg" cx="50%" cy="50%" r="75%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </radialGradient>
+  </defs>
+  <rect width="3840" height="2160" fill="url(#lightBg)" />
+  <path d="M 0 1080 Q 1920 0 3840 1080 T 0 1080" fill="rgba(0,240,255,0.05)" />
+</svg>

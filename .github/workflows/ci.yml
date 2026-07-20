@@ -1,0 +1,43 @@
+name: NiraOS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  source-validation:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm --needed \
+            base-devel cmake ninja rust protobuf grpc \
+            qt6-base qt6-declarative qt6-wayland python systemd
+
+      - name: Test Rust services
+        run: cargo test --locked --workspace
+
+      - name: Build desktop stack
+        run: |
+          cmake -G Ninja -S . -B build-ci -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-ci --parallel 2
+
+      - name: Run host-side image contract tests
+        run: python -m unittest discover -s tests/integration -p 'test_*.py' -v
+
+      - name: Validate shell entry points
+        run: |
+          bash -n mkosi.build.chroot
+          bash -n mkosi.postinst.chroot
+          bash -n run-qemu.sh
+          bash -n scripts/verify-qemu.sh
+          bash -n mkosi/mkosi.extra/usr/bin/start-nira-session

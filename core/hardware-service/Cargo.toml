@@ -1,0 +1,18 @@
+[package]
+name = "hardware-service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+sys-utils = { path = "../sys-utils", features = ["uds"] }
+tokio.workspace = true
+anyhow.workspace = true
+tonic.workspace = true
+prost.workspace = true
+sysinfo.workspace = true
+
+[build-dependencies]
+tonic-build.workspace = true
+
+

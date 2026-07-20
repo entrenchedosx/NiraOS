@@ -1,0 +1,21 @@
+[Unit]
+Description=NiraOS AI Lifecycle Manager
+BindsTo=nira-shell.service
+After=nira-shell.service
+Requires=nira-ai.service
+
+[Service]
+ExecStart=/usr/bin/nira-ai-manager
+Restart=on-failure
+RestartSec=10s
+StandardOutput=journal
+StandardError=journal
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=graphical-session.target

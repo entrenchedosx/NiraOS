@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <!-- Definitions for gradients and shadows -->
+  <defs>
+    <linearGradient id="niraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF" />
+      <stop offset="100%" stop-color="#7000FF" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Left sweeping arc of the 'A' -->
+  <path d="M 50 15 
+           C 40 40, 20 60, 15 85
+           C 25 80, 40 70, 45 45
+           Z" 
+        fill="url(#niraGrad)" opacity="0.9" />
+
+  <!-- Right sweeping arc of the 'A' -->
+  <path d="M 50 15 
+           C 60 40, 80 60, 85 85
+           C 75 80, 60 70, 55 45
+           Z" 
+        fill="url(#niraGrad)" opacity="0.9" />
+
+  <!-- Core AI Node (diamond/star) in the center -->
+  <path d="M 50 35
+           L 55 45
+           L 65 50
+           L 55 55
+           L 50 65
+           L 45 55
+           L 35 50
+           L 45 45
+           Z" 
+        fill="#FFFFFF" 
+        filter="url(#glow)" />
+</svg>

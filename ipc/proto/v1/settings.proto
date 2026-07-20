@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package niraos.settings.v1;
+
+service SettingsService {
+    rpc GetSetting (GetSettingRequest) returns (GetSettingResponse);
+    rpc SetSetting (SetSettingRequest) returns (SetSettingResponse);
+    rpc ListSettings (ListSettingsRequest) returns (ListSettingsResponse);
+}
+
+message GetSettingRequest {
+    string key = 1;
+}
+
+message GetSettingResponse {
+    string value = 1;
+    bool exists = 2;
+}
+
+message SetSettingRequest {
+    string key = 1;
+    string value = 2;
+}
+
+message SetSettingResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+message ListSettingsRequest {}
+
+message ListSettingsResponse {
+    repeated SettingEntry entries = 1;
+}
+
+message SettingEntry {
+    string key = 1;
+    string value = 2;
+}

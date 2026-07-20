@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=NiraOS Files
+Comment=Browse and manage files
+Exec=nira-files
+Icon=system-file-manager
+Categories=System;FileManager;
+StartupNotify=true
+Terminal=false

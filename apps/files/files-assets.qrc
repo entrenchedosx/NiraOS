@@ -1,0 +1,46 @@
+<RCC>
+    <qresource prefix="/nira/filemanager">
+        <file alias="folder.svg">../../assets/filemanager/folder.svg</file>
+        <file alias="folder-open.svg">../../assets/icons/folder-open.svg</file>
+        <file alias="empty-folder.svg">../../assets/filemanager/empty-folder.svg</file>
+        <file alias="nav-back.svg">../../assets/filemanager/nav-back.svg</file>
+        <file alias="nav-forward.svg">../../assets/filemanager/nav-forward.svg</file>
+        <file alias="nav-up.svg">../../assets/filemanager/nav-up.svg</file>
+        <file alias="nav-refresh.svg">../../assets/filemanager/nav-refresh.svg</file>
+        <file alias="toolbar-copy.svg">../../assets/filemanager/toolbar-copy.svg</file>
+        <file alias="toolbar-paste.svg">../../assets/filemanager/toolbar-paste.svg</file>
+        <file alias="toolbar-delete.svg">../../assets/filemanager/toolbar-delete.svg</file>
+        <file alias="toolbar-rename.svg">../../assets/filemanager/toolbar-rename.svg</file>
+        <file alias="sidebar-home.svg">../../assets/filemanager/sidebar-home.svg</file>
+        <file alias="permission-denied.svg">../../assets/filemanager/permission-denied.svg</file>
+
+        <!-- Standard freedesktop icon name aliases (from .desktop files) -->
+        <file alias="system-file-manager.svg">../../assets/filemanager/folder.svg</file>
+        <file alias="user-home.svg">../../assets/filemanager/sidebar-home.svg</file>
+        <file alias="user-desktop.svg">../../assets/icons/desktop.svg</file>
+
+        <!-- 48px PNG fallbacks -->
+        <file alias="folder-48.png">../../assets/filemanager/folder-48.png</file>
+        <file alias="nav-back-48.png">../../assets/filemanager/nav-back-48.png</file>
+        <file alias="nav-forward-48.png">../../assets/filemanager/nav-forward-48.png</file>
+        <file alias="nav-up-48.png">../../assets/filemanager/nav-up-48.png</file>
+        <file alias="nav-refresh-48.png">../../assets/filemanager/nav-refresh-48.png</file>
+        <file alias="toolbar-copy-48.png">../../assets/filemanager/toolbar-copy-48.png</file>
+        <file alias="toolbar-paste-48.png">../../assets/filemanager/toolbar-paste-48.png</file>
+        <file alias="toolbar-delete-48.png">../../assets/filemanager/toolbar-delete-48.png</file>
+        <file alias="toolbar-rename-48.png">../../assets/filemanager/toolbar-rename-48.png</file>
+        <file alias="sidebar-home-48.png">../../assets/filemanager/sidebar-home-48.png</file>
+        <file alias="user-home-48.png">../../assets/filemanager/sidebar-home-48.png</file>
+        <file alias="system-file-manager-48.png">../../assets/filemanager/folder-48.png</file>
+    </qresource>
+    <qresource prefix="/nira/icons">
+        <file alias="trash-empty.svg">../../assets/icons/trash-empty.svg</file>
+        <file alias="trash-full.svg">../../assets/icons/trash-full.svg</file>
+        <file alias="user-trash.svg">../../assets/icons/trash-empty.svg</file>
+        <file alias="user-trash-full.svg">../../assets/icons/trash-full.svg</file>
+        <file alias="drive-harddisk.svg">../../assets/icons/computer.svg</file>
+        <file alias="trash-empty-48.png">../../assets/icons/trash-empty-48.png</file>
+        <file alias="trash-full-48.png">../../assets/icons/trash-full-48.png</file>
+        <file alias="user-trash-48.png">../../assets/icons/trash-empty-48.png</file>
+    </qresource>
+</RCC>

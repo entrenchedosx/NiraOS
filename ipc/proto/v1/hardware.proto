@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package niraos.hardware.v1;
+
+service HardwareService {
+    rpc GetTelemetry (HardwareRequest) returns (HardwareResponse);
+}
+
+message HardwareRequest {
+    bool include_thermals = 1;
+}
+
+message HardwareResponse {
+    string cpu_model = 1;
+    string gpu_model = 2;
+    string driver_version = 3;
+    // -1 means unavailable (for example a desktop without a battery or a VM
+    // without a thermal sensor). Zero is a real measurement, not a sentinel.
+    float battery_percentage = 4;
+    float cpu_temp = 5;
+    uint64 memory_total_mb = 6;
+    uint64 memory_used_mb = 7;
+}

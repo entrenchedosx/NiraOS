@@ -1,0 +1,10 @@
+[Unit]
+Description=NiraOS Settings Service
+
+[Service]
+ExecStart=/usr/bin/nira-settings
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

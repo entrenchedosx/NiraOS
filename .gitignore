@@ -1,0 +1,55 @@
+# Native build output
+target/
+/build/
+/build-*/
+/mkosi.output/
+
+# OS images and extracted boot artifacts
+/*.raw
+/*.vmlinuz
+/*.initrd
+/NiraOS
+/NiraOS-cycle*
+/initrd
+/initrd.cpio.zst
+
+# Large local model payloads are provisioned and verified at runtime
+/assets/models/*.gguf
+/mkosi/mkosi.extra/usr/share/niraos/models/*.gguf
+
+# QEMU and forensic runtime evidence
+/*.log
+/*.ppm
+/screenshot-*.png
+/journal*.txt
+/nira-logs.txt
+/verification-artifacts/
+/.recovery-*
+/.nested-*
+
+# Generated build provenance
+/BUILD_MANIFEST.json
+
+# Python tooling
+__pycache__/
+*.pyc
+
+# Node.js
+node_modules/
+
+# IDE / editor
+.zcode/
+.vscode/
+.idea/
+
+# QEMU boot evidence (generated during testing)
+boot_output.txt
+boot_logs.txt
+greetd_output.txt
+latest-journal*.txt
+
+# Build incident logs (generated during iterative build cycles)
+.build-incident*.log
+
+# Large verification artifact directories (generated during release testing)
+/verification-artifacts*/

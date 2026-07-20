@@ -1,0 +1,10 @@
+[Unit]
+Description=NiraOS Action Manager (Automation Engine)
+
+[Service]
+ExecStart=/usr/bin/nira-action
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

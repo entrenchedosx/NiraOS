@@ -1,0 +1,16 @@
+[package]
+name = "ai-manager"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow.workspace = true
+prost.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+sys-utils = { path = "../sys-utils", features = ["uds"] }
+serde.workspace = true
+toml = "0.8"
+
+[build-dependencies]
+tonic-build.workspace = true

@@ -1,0 +1,111 @@
+#!/bin/bash
+# NiraOS image post-installation.
+# The .chroot suffix makes mkosi run this *inside* the image; without it,
+# useradd/systemctl would run against the build host instead of the image.
+set -e
+
+echo "Configuring NiraOS Image..."
+
+# Shared group for authenticated local IPC between the desktop session and
+# least-privilege system daemons.  Unix sockets remain inaccessible to users
+# outside this group.
+if ! getent group "nira-ipc" &>/dev/null; then
+    groupadd -r nira-ipc
+fi
+
+# Create greeter user (runs the login screen)
+# Needs video group access for eglfs DRM/KMS rendering.
+if ! id "greeter" &>/dev/null; then
+    useradd -r -G video,input -s /usr/bin/nologin greeter
+fi
+usermod -aG video,input greeter || true
+usermod -s /usr/bin/nologin greeter
+usermod -d /var/lib/greetd greeter
+install -d -o greeter -g greeter -m 0750 /var/lib/greetd
+
+# The login screen has no audio role. Arch's global user presets otherwise
+# start PipeWire, pipewire-pulse, WirePlumber, and their sockets for greeter,
+# wasting memory and CPU before a user has authenticated.
+install -d -o greeter -g greeter -m 0755 /var/lib/greetd/.config
+install -d -o greeter -g greeter -m 0755 /var/lib/greetd/.config/systemd
+install -d -o greeter -g greeter -m 0755 /var/lib/greetd/.config/systemd/user
+for unit in \
+    pipewire.service pipewire.socket \
+    pipewire-pulse.service pipewire-pulse.socket \
+    wireplumber.service
+do
+    ln -sfn /dev/null "/var/lib/greetd/.config/systemd/user/$unit"
+done
+
+# Create nira user (main session user)
+if ! id "nira" &>/dev/null; then
+    useradd -m -G wheel,video,audio,input,nira-ipc nira
+    echo "nira:nira" | chpasswd
+fi
+usermod -aG wheel,video,audio,input,nira-ipc nira
+
+# Create nira-ai user AND group (daemon user)
+# -U ensures the matching group 'nira-ai' is created
+if ! id "nira-ai" &>/dev/null; then
+    useradd -r -U -s /usr/bin/nologin nira-ai
+fi
+usermod -aG nira-ipc nira-ai
+
+install -d -o root -g root -m 0755 /var/lib/niraos
+install -d -o nira-ai -g nira-ai -m 0750 /var/lib/niraos/models
+# Fix model file permissions if present
+if [ -f /var/lib/niraos/models/Phi-4-mini-instruct-Q4_K_M.gguf ]; then
+    chown nira-ai:nira-ai /var/lib/niraos/models/*.gguf 2>/dev/null || true
+    chmod 0640 /var/lib/niraos/models/*.gguf 2>/dev/null || true
+fi
+install -d -o nira-ai -g nira-ai -m 0750 /var/lib/niraos/ai
+install -d -o root -g nira-ipc -m 0750 /var/lib/niraos/permissions
+install -d -o nira -g nira -m 0755 /var/lib/niraos/desktop
+
+# Session and greeter wrappers must be executable (installed via
+# ExtraTrees, which originates on an NTFS workspace where POSIX mode
+# bits are not trustworthy).  Without this, greetd cannot exec
+# start-nira-greeter and the login screen never appears.
+chmod 0755 /usr/bin/start-nira-greeter
+chmod 0755 /usr/bin/start-nira-session
+chmod 0440 /etc/sudoers.d/wheel
+
+# ExtraTrees originates on an NTFS workspace, where POSIX mode bits are not
+# trustworthy.  Normalize security-sensitive configuration inside the image
+# instead of shipping executable or world-writable system configuration.
+chmod 0644 /etc/greetd/config.toml
+chmod 0644 /etc/xdg/mimeapps.list
+chmod 0644 /etc/systemd/logind.conf.d/niraos.conf
+chmod 0644 /etc/pam.d/systemd-user
+chmod 0644 /etc/systemd/system/NetworkManager.service.d/10-niraos-install.conf
+chmod 0644 /usr/lib/systemd/system-preset/10-nira.preset
+
+# A desktop must remain usable without a network.  Arch's NetworkManager unit
+# can pull wait-online back in through vendor installation metadata even when
+# a distribution preset disables it.  Mask the boot-blocking helper so the
+# later mkosi preset pass cannot re-enable it.
+systemctl mask NetworkManager-wait-online.service
+
+# NOTE: ordinary service enablement is declared in
+# /usr/lib/systemd/system-preset/10-nira.preset (single source of truth).
+# mkosi runs `systemctl preset-all` AFTER this script, which would undo any
+# `systemctl enable` performed here that is not also listed in the preset.
+
+# User-session units (notification/settings/etc.) are not covered by the
+# system preset machinery.  Create their WantedBy symlinks under
+# /etc/systemd/user/ so they activate on first login for every user without
+# requiring a per-user `systemctl --user enable`.  The notification service
+# is what makes the shell's toast UI actually receive toasts from apps.
+install -d -m 0755 /etc/systemd/user/default.target.wants
+ln -sf ../nira-notification.service /etc/systemd/user/default.target.wants/nira-notification.service 2>/dev/null || true
+ln -sf ../nira-settings.service    /etc/systemd/user/default.target.wants/nira-settings.service    2>/dev/null || true
+ln -sf ../nira-action.service      /etc/systemd/user/default.target.wants/nira-action.service      2>/dev/null || true
+
+# NOTE: We DO NOT enable nira-compositor or nira-shell as systemd services!
+# They are launched by the user's Wayland session wrapper (start-nira-session)
+# which is invoked by greetd after successful greeter authentication.
+
+# Boot target and VT ownership are declared by the kernel command line,
+# logind configuration, and system preset policy.
+
+echo "NiraOS configuration complete."

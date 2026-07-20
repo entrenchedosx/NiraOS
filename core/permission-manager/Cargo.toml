@@ -1,0 +1,20 @@
+[package]
+name = "permission-manager"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+sys-utils = { path = "../sys-utils", features = ["uds"] }
+tokio.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tonic.workspace = true
+prost.workspace = true
+rusqlite = { version = "0.31", features = ["bundled"] }
+
+[build-dependencies]
+tonic-build.workspace = true
+
+

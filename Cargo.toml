@@ -1,0 +1,32 @@
+[workspace]
+resolver = "2"
+members = [
+    "core/ai-daemon",
+    "core/context-broker",
+    "core/permission-manager",
+    "core/action-manager",
+    "core/model-manager",
+    "core/settings-service",
+    "core/hardware-service",
+    "core/notification-service",
+    "core/nira-debug",
+    "core/nira-gpu-test",
+    "core/config",
+    "core/sys-utils",
+    "core/ai-manager",
+]
+
+[workspace.dependencies]
+tokio = { version = "1.36", features = ["full"] }
+tonic = "0.11"
+prost = "0.12"
+tonic-build = "0.11"
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sysinfo = "0.30"
+reqwest = { version = "0.11", default-features = false, features = ["rustls-tls", "stream"] }
+libc = "0.2"
+
+[patch.crates-io]
+llama-cpp-sys-2 = { path = "core/vendor/llama-cpp-sys-2" }

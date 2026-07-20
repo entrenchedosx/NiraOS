@@ -1,0 +1,16 @@
+# NiraOS AI Daemon Configuration
+# This file is read from /etc/niraos/ai.toml at startup.
+
+# AI operating mode:
+#   "ondemand"    - Start unloaded, load on first request, unload after inactivity (default)
+#   "always"      - Load model on startup, keep loaded
+#   "preload"     - Load on startup, only respond when explicitly enabled
+#   "auto-unload" - Load on demand, unload immediately when idle
+mode = "ondemand"
+
+# Seconds of inactivity before the model is automatically unloaded
+# (only applies in "ondemand" and "auto-unload" modes)
+inactivity_timeout_secs = 300
+
+# Path to the default GGUF model file
+model_path = "/var/lib/niraos/models/default.gguf"

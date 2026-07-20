@@ -1,0 +1,3 @@
+mode = "always"
+model_path = "/var/lib/niraos/models/default.gguf"
+inactivity_timeout_secs = 300

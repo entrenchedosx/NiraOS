@@ -1,0 +1,10 @@
+[Unit]
+Description=NiraOS Notification Service
+
+[Service]
+ExecStart=/usr/bin/nira-notification
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target

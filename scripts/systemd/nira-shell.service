@@ -1,0 +1,15 @@
+[Unit]
+Description=NiraOS Desktop Shell
+Requires=nira-compositor.service
+After=nira-compositor.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/nira-shell
+Restart=on-failure
+RestartSec=2s
+Environment="WAYLAND_DISPLAY=wayland-0"
+Environment="QT_QPA_PLATFORM=wayland"
+
+[Install]
+WantedBy=default.target

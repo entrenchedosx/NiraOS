@@ -1,0 +1,17 @@
+<RCC>
+    <qresource prefix="/nira/notepad">
+        <file alias="app-icon.svg">../../assets/notepad/app-icon.svg</file>
+        <file alias="accessories-text-editor.svg">../../assets/notepad/app-icon.svg</file>
+        <file alias="toolbar-find.svg">../../assets/notepad/toolbar-find.svg</file>
+        <file alias="toolbar-save.svg">../../assets/notepad/toolbar-save.svg</file>
+        <file alias="toolbar-undo.svg">../../assets/notepad/toolbar-undo.svg</file>
+        <file alias="toolbar-redo.svg">../../assets/notepad/toolbar-redo.svg</file>
+        <!-- 48px PNG fallbacks -->
+        <file alias="app-icon-48.png">../../assets/notepad/app-icon-48.png</file>
+        <file alias="accessories-text-editor-48.png">../../assets/notepad/app-icon-48.png</file>
+        <file alias="toolbar-find-48.png">../../assets/notepad/toolbar-find-48.png</file>
+        <file alias="toolbar-save-48.png">../../assets/notepad/toolbar-save-48.png</file>
+        <file alias="toolbar-undo-48.png">../../assets/notepad/toolbar-undo-48.png</file>
+        <file alias="toolbar-redo-48.png">../../assets/notepad/toolbar-redo-48.png</file>
+    </qresource>
+</RCC>

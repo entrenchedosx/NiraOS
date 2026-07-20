@@ -1,0 +1,12 @@
+[Unit]
+Description=Nira Shell
+Requires=nira-compositor.service
+After=nira-compositor.service
+
+[Service]
+ExecStart=/usr/bin/nira-shell
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=graphical-session.target

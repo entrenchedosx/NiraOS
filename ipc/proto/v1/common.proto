@@ -1,0 +1,19 @@
+syntax = "proto3";
+package niraos.common.v1;
+
+message Error {
+    int32 code = 1;
+    string message = 2;
+    string details = 3;
+}
+
+message CapabilityRequest {
+    string app_id = 1;
+    string capability_name = 2;
+    string reason = 3;
+}
+
+message CapabilityResponse {
+    bool granted = 1;
+    Error error = 2;
+}

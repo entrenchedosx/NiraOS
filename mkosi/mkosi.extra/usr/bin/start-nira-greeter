@@ -1,0 +1,67 @@
+#!/bin/bash
+# NiraOS Greeter Wrapper
+# Executed by greetd to display the login screen.
+set -uo pipefail
+
+NIRA_LOG_DIR="/var/log/niraos"
+mkdir -p "$NIRA_LOG_DIR" 2>/dev/null || true
+
+GREETER_LOG="/tmp/nira-greeter.log"
+
+export QT_DEBUG_PLUGINS=1
+export QT_LOGGING_RULES="qt.qpa.eglfs.*=true;qt.qml.*=true;qt.quick.*=true"
+export QSG_INFO=1
+
+exec > >(tee -a "$GREETER_LOG" | systemd-cat -t nira-greeter) 2>&1
+
+echo "=== NiraOS Greeter starting at $(date) ==="
+
+VIRT_TYPE="none"
+if command -v systemd-detect-virt &>/dev/null; then
+    VIRT_TYPE=$(systemd-detect-virt 2>/dev/null || echo "none")
+fi
+echo "DEBUG: Virtualization detected: $VIRT_TYPE"
+
+if [ "$VIRT_TYPE" != "none" ]; then
+    export QT_ENABLE_HIGHDPI_SCALING=0
+    export QT_AUTO_SCREEN_SCALE_FACTOR=0
+    export QT_SCALE_FACTOR=1
+fi
+
+# Ensure the DRM driver (bochs for QEMU VGA) is loaded before trying eglfs.
+# The module is on the rootfs, not in the initrd, so udev may not have loaded
+# it by the time greetd starts the greeter.  modprobe is idempotent.
+echo "DEBUG: Loading DRM/KMS driver..."
+modprobe bochs 2>&1 || echo "WARNING: modprobe bochs failed (might be built-in)"
+
+# Load input drivers — psmouse for PS/2 fallback, virtio_input for
+# virtio-tablet/virtio-keyboard absolute positioning.  Without these,
+# no /dev/input/event* devices appear and Qt gets no mouse/keyboard events.
+echo "DEBUG: Loading input drivers..."
+modprobe psmouse 2>&1 || true
+modprobe virtio_input 2>&1 || true
+sleep 1
+echo "DEBUG: Input devices: $(ls /dev/input/ 2>&1)"
+echo "DEBUG: DRM devices: $(ls /dev/dri/ 2>&1)"
+
+# Software OpenGL via llvmpipe — compatible with eglfs_kms.
+# IMPORTANT: Do NOT set MESA_LOADER_DRIVER_OVERRIDE=llvmpipe.
+# That env var overrides the DRI driver loader, but llvmpipe is a Gallium
+# driver, NOT a DRI driver.  Setting it prevents Mesa from loading the
+# kms_swrast DRI driver, which is REQUIRED for eglfs_kms software rendering.
+# The result is EGL init failure and a black screen.
+export LIBGL_ALWAYS_SOFTWARE=1
+export GALLIUM_DRIVER=llvmpipe
+
+# Cursor theme (installed via breeze-cursors package)
+export XCURSOR_THEME=Breeze_Light
+export XCURSOR_SIZE=24
+
+echo "DEBUG: Starting greeter with llvmpipe OpenGL rendering..."
+
+/usr/bin/nira-greeter 2>&1 | tee -a "$GREETER_LOG" | systemd-cat -t nira-greeter
+GREETER_EXIT=${PIPESTATUS[0]}
+
+echo "DEBUG: Greeter exited with status $GREETER_EXIT"
+cp "$GREETER_LOG" "$NIRA_LOG_DIR/nira-greeter.log" 2>/dev/null || true
+exit "$GREETER_EXIT"

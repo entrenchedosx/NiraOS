@@ -1,0 +1,24 @@
+[Unit]
+Description=NiraOS Permission Manager
+Before=nira-context.service nira-action.service
+StartLimitIntervalSec=60s
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=root
+Group=nira-ipc
+ExecStart=/usr/bin/nira-permission
+Restart=on-failure
+RestartSec=5s
+Environment="RUST_LOG=info"
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/niraos/permissions /run/niraos
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

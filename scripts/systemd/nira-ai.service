@@ -1,0 +1,33 @@
+[Unit]
+Description=NiraOS AI Daemon (llama.cpp Engine)
+Requires=nira-context.service nira-ai.socket
+After=nira-context.service nira-ai.socket
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=nira-ai
+Group=nira-ipc
+ExecStart=/usr/bin/nira-ai
+Restart=always
+Sockets=nira-ai.socket
+StandardOutput=journal
+StandardError=journal
+Environment="RUST_LOG=info"
+Environment="GGML_CPU_ARCH_AVX=0"
+Environment="GGML_CPU_ARCH_AVX2=0"
+Environment="GGML_CPU_ARCH_AVX512=0"
+Environment="GGML_CPU_ARCH_FMA=0"
+Environment="GGML_CPU_ARCH_F16C=0"
+Environment="GGML_CPU_ARCH_SSE3=0"
+Environment="GGML_CPU_ARCH_SSSE3=0"
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=read-only
+ProtectSystem=strict
+ReadWritePaths=/var/lib/niraos/models /var/lib/niraos/ai /run/niraos
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

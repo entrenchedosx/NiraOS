@@ -1,0 +1,10 @@
+[Unit]
+Description=NiraOS Permission Manager (Security Boundary)
+Before=nira-context.service
+
+[Service]
+ExecStart=/usr/bin/nira-permission
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

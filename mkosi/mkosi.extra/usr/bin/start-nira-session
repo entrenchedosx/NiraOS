@@ -1,0 +1,290 @@
+#!/bin/bash
+# NiraOS Wayland Session Wrapper — DEBUG VERSION
+# Executed by greetd on login (see /etc/greetd/config.toml).
+
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=NiraOS
+export XDG_SESSION_DESKTOP=NiraOS
+
+# ── Global debug logging ─────────────────────────────────────────────────────
+NIRA_LOG_DIR="/var/log/niraos"
+mkdir -p "$NIRA_LOG_DIR" 2>/dev/null || true
+chmod 0777 "$NIRA_LOG_DIR" 2>/dev/null || true
+
+# Set up comprehensive debug environment for Qt
+export QT_DEBUG_PLUGINS=1
+export QSG_INFO=1
+export QT_LOGGING_RULES="${QT_LOGGING_RULES:-qt.qpa.eglfs.*=true;qt.qpa.wayland.*=true;qt.qml.*=true;qt.quick.*=true}"
+export QT_MESSAGE_PATTERN="[%{time h:mm:ss.zzz} %{type} %{category}] %{message}"
+
+# ── Per-process log files ────────────────────────────────────────────────────
+LOG_DIR="${XDG_RUNTIME_DIR:-/tmp}"
+SESSION_LOG="$LOG_DIR/nira-session.log"
+COMPOSITOR_LOG="$LOG_DIR/nira-compositor.log"
+SHELL_LOG="$LOG_DIR/nira-shell.log"
+SYSLOG_TAG="nira-session"
+
+# Everything this script prints goes to the journal and session log.
+exec > >(tee -a "$SESSION_LOG" | systemd-cat -t "$SYSLOG_TAG") 2>&1
+echo "=== NiraOS session starting at $(date) ==="
+echo "=== DEBUG: Log directory: $LOG_DIR ==="
+echo "=== DEBUG: Nira log dir: $NIRA_LOG_DIR ==="
+
+# Dump environment for diagnosis
+echo "=== ENVIRONMENT ==="
+env | sort
+echo "=== END ENVIRONMENT ==="
+
+# Verify essential binaries exist
+for bin in nira-compositor nira-shell; do
+    path=$(command -v "$bin" 2>/dev/null || echo "/usr/bin/$bin")
+    if [ -x "$path" ]; then
+        echo "DEBUG: $bin found at $path"
+        ldd "$path" 2>&1 | grep -E '(not found|=> /)' | head -30
+    else
+        echo "ERROR: $bin not found or not executable at $path"
+    fi
+done
+
+# ── Runtime directory check ──────────────────────────────────────────────────
+if [ -z "${XDG_RUNTIME_DIR:-}" ] || [ ! -d "$XDG_RUNTIME_DIR" ]; then
+    echo "ERROR: XDG_RUNTIME_DIR is not available; refusing to start."
+    echo "  XDG_RUNTIME_DIR='${XDG_RUNTIME_DIR:-<unset>}'"
+    exit 1
+fi
+echo "DEBUG: XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR"
+echo "DEBUG: XDG_RUNTIME_DIR owner=$(stat -c '%u:%g' "$XDG_RUNTIME_DIR" 2>/dev/null || echo unknown)"
+echo "DEBUG: current uid=$(id -u) gid=$(id -g)"
+
+# ── IPC socket directory ─────────────────────────────────────────────────────
+if [ ! -d /run/niraos ]; then
+    echo "ERROR: system IPC directory /run/niraos was not created."
+    echo "DEBUG: /run contents: $(ls /run/ 2>&1)"
+    exit 1
+fi
+echo "DEBUG: IPC socket directory /run/niraos is available"
+echo "DEBUG: /run/niraos contents: $(ls -la /run/niraos/ 2>&1)"
+
+# ── Auto-detect VM vs bare-metal ─────────────────────────────────────────────
+VIRT_TYPE="none"
+if command -v systemd-detect-virt &>/dev/null; then
+    VIRT_TYPE=$(systemd-detect-virt 2>/dev/null || echo "none")
+fi
+echo "DEBUG: Virtualization detected: $VIRT_TYPE"
+
+if [ "$VIRT_TYPE" != "none" ]; then
+    export QT_ENABLE_HIGHDPI_SCALING=0
+    export QT_AUTO_SCREEN_SCALE_FACTOR=0
+    export QT_SCALE_FACTOR=1
+fi
+
+# ── Input drivers ───────────────────────────────────────────────────────────
+echo "DEBUG: Loading input drivers..."
+modprobe psmouse 2>&1 || true
+modprobe virtio_input 2>&1 || true
+echo "DEBUG: Input devices: $(ls /dev/input/ 2>&1)"
+
+# ── DRM device check ────────────────────────────────────────────────────────
+echo "DEBUG: Checking for DRM device..."
+DRM_TIMEOUT=10
+while [ ! -e /dev/dri/card0 ] && [ $DRM_TIMEOUT -gt 0 ]; do
+    echo "DEBUG: Waiting for DRM device... (timeout=$DRM_TIMEOUT)"
+    ls /dev/dri/ 2>&1 || echo "  /dev/dri/ does not exist"
+    sleep 1
+    DRM_TIMEOUT=$((DRM_TIMEOUT - 1))
+done
+
+if [ -e /dev/dri/card0 ]; then
+    echo "DEBUG: DRM devices available: $(ls /dev/dri/ 2>&1)"
+    echo "DEBUG: card0 driver: $(cat /sys/class/drm/card0/device/uevent 2>/dev/null | head -5 || echo unknown)"
+    echo "DEBUG: card0 status: $(cat /sys/class/drm/card0/status 2>/dev/null || echo unknown)"
+else
+    echo "ERROR: no DRM device found at /dev/dri/card0."
+    echo "DEBUG: /dev/dri contents: $(ls -la /dev/dri/ 2>&1)"
+    exit 1
+fi
+
+# ── Hardware Acceleration / Graphics Mode ────────────────────────────────────
+GRAPHICS_MODE="${NIRA_GRAPHICS_MODE:-auto}"
+FW_GRAPHICS_MODE=/sys/firmware/qemu_fw_cfg/by_name/opt/nira/graphics-mode/raw
+if [ "$GRAPHICS_MODE" = "auto" ] && [ -r "$FW_GRAPHICS_MODE" ]; then
+    GRAPHICS_MODE=$(tr -d '\000\r\n ' < "$FW_GRAPHICS_MODE")
+    echo "DEBUG: Graphics mode from fw_cfg: $GRAPHICS_MODE"
+fi
+if [ "$GRAPHICS_MODE" = "auto" ]; then
+    if [ "$VIRT_TYPE" = "none" ]; then
+        GRAPHICS_MODE=hardware
+    else
+        GRAPHICS_MODE=software
+    fi
+    echo "DEBUG: Graphics mode auto-detected: $GRAPHICS_MODE"
+fi
+if [ "${NIRA_SAFE_GRAPHICS:-0}" = "1" ]; then
+    GRAPHICS_MODE=software
+    echo "DEBUG: Graphics mode forced to software by NIRA_SAFE_GRAPHICS"
+fi
+case "$GRAPHICS_MODE" in
+software)
+    echo "DEBUG: Graphics mode: software"
+    export LIBGL_ALWAYS_SOFTWARE=1
+    export GALLIUM_DRIVER=llvmpipe
+    export QTWEBENGINE_CHROMIUM_FLAGS="${QTWEBENGINE_CHROMIUM_FLAGS:-} --disable-gpu --disable-gpu-compositing"
+    echo "DEBUG: LIBGL_ALWAYS_SOFTWARE=$LIBGL_ALWAYS_SOFTWARE"
+    echo "DEBUG: GALLIUM_DRIVER=$GALLIUM_DRIVER"
+    ;;
+hardware)
+    echo "DEBUG: Graphics mode: hardware"
+    ;;
+*)
+    echo "ERROR: unsupported graphics mode '$GRAPHICS_MODE'"
+    exit 1
+    ;;
+esac
+
+# ── Platform plugin ──────────────────────────────────────────────────────────
+export QT_QPA_PLATFORM="${QT_QPA_PLATFORM:-eglfs}"
+export QT_QPA_EGLFS_INTEGRATION="${QT_QPA_EGLFS_INTEGRATION:-eglfs_kms}"
+echo "DEBUG: QT_QPA_PLATFORM=$QT_QPA_PLATFORM"
+echo "DEBUG: QT_QPA_EGLFS_INTEGRATION=$QT_QPA_EGLFS_INTEGRATION"
+
+# Enable core dumps for debugging crashes
+ulimit -c unlimited 2>/dev/null || true
+echo "DEBUG: core file size limit: $(ulimit -c)"
+
+# ── Cursor theme ────────────────────────────────────────────────────────────
+export XCURSOR_THEME="${XCURSOR_THEME:-Breeze_Light}"
+export XCURSOR_SIZE="${XCURSOR_SIZE:-24}"
+
+# ── D-Bus session bus ───────────────────────────────────────────────────────
+# The compositor and shell both need a session bus for D-Bus communication
+# (WindowManagerDBus, etc.).  Start a bus daemon manually since greetd does
+# not run a session manager.  dbus-broker-launch prints the address and
+# sets DBUS_SESSION_BUS_ADDRESS automatically; dbus-daemon needs an explicit
+# export.
+echo "DEBUG: Starting D-Bus session bus..."
+if command -v dbus-launch &>/dev/null; then
+    eval "$(dbus-launch --sh-syntax)"
+    DBUS_PID="$DBUS_SESSION_BUS_PID"
+    echo "DEBUG: dbus-launch started PID=$DBUS_PID ADDRESS=$DBUS_SESSION_BUS_ADDRESS"
+elif command -v dbus-daemon &>/dev/null; then
+    dbus_addr="unix:path=${XDG_RUNTIME_DIR}/bus"
+    dbus-daemon --session --address="$dbus_addr" --nofork &
+    DBUS_PID=$!
+    export DBUS_SESSION_BUS_ADDRESS="$dbus_addr"
+    sleep 1
+    echo "DEBUG: dbus-daemon started PID=$DBUS_PID ADDRESS=$DBUS_SESSION_BUS_ADDRESS"
+fi
+
+# ── Start compositor ────────────────────────────────────────────────────────
+echo "=== Starting Nira compositor ==="
+nira-compositor > >(tee "$COMPOSITOR_LOG" | systemd-cat -t nira-compositor) 2>&1 &
+COMPOSITOR_PID=$!
+echo "DEBUG: Compositor PID: $COMPOSITOR_PID"
+echo "DEBUG: Compositor started at $(date)"
+
+SHELL_PID=""
+cleanup() {
+    echo "Session cleanup: dbus=${DBUS_PID:-none} compositor=$COMPOSITOR_PID shell=${SHELL_PID:-none}"
+    local pids=("$COMPOSITOR_PID")
+    if [ -n "${SHELL_PID:-}" ]; then
+        pids+=("$SHELL_PID")
+    fi
+    if [ -n "${DBUS_PID:-}" ]; then
+        pids+=("$DBUS_PID")
+    fi
+    kill "${pids[@]}" 2>/dev/null || true
+
+    # Do not return control to greetd until every DRM/Wayland process has
+    # actually exited. Otherwise a newly spawned greeter races the old
+    # compositor for DRM master and can leave the display permanently black.
+    local pid
+    for pid in "${pids[@]}"; do
+        wait "$pid" 2>/dev/null || true
+    done
+}
+trap cleanup EXIT INT TERM
+
+# Wait for the Wayland socket (the compositor pins socketName to wayland-0).
+TIMEOUT=20
+while [ ! -S "$XDG_RUNTIME_DIR/wayland-0" ] && [ $TIMEOUT -gt 0 ]; do
+    if ! kill -0 "$COMPOSITOR_PID" 2>/dev/null; then
+        echo "ERROR: Compositor (PID $COMPOSITOR_PID) exited prematurely."
+        echo "--- Compositor log ---"
+        cat "$COMPOSITOR_LOG" 2>/dev/null || true
+        echo "--- End compositor log ---"
+        exit 1
+    fi
+    sleep 0.5
+    TIMEOUT=$((TIMEOUT - 1))
+done
+
+if [ ! -S "$XDG_RUNTIME_DIR/wayland-0" ]; then
+    echo "ERROR: Wayland socket not found after timeout. Compositor failed to start."
+    echo "--- Compositor log ---"
+    cat "$COMPOSITOR_LOG" 2>/dev/null || true
+    echo "--- End compositor log ---"
+    exit 1
+fi
+
+echo "Wayland socket ready: $XDG_RUNTIME_DIR/wayland-0"
+
+# ── Start shell ──────────────────────────────────────────────────────────────
+export WAYLAND_DISPLAY=wayland-0
+export QT_QPA_PLATFORM=wayland
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+
+echo "=== Starting Nira shell ==="
+echo "DEBUG: WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
+echo "DEBUG: QT_QPA_PLATFORM=$QT_QPA_PLATFORM"
+echo "DEBUG: Wayland socket exists: $(test -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" && echo YES || echo NO)"
+
+# Verify Qt Wayland platform plugin is available
+echo "DEBUG: Qt Wayland plugin search:"
+find /usr/lib/qt6/plugins -name '*wayland*' -type f 2>/dev/null | head -10 || echo "  no wayland plugins found"
+find /usr/lib -name 'libqwayland*' -type f 2>/dev/null | head -5 || echo "  no libqwayland found"
+
+nira-shell > >(tee "$SHELL_LOG" | systemd-cat -t nira-shell) 2>&1 &
+SHELL_PID=$!
+echo "DEBUG: Shell PID: $SHELL_PID"
+echo "DEBUG: Shell started at $(date)"
+
+# Short delay to let shell initialize before checking
+sleep 2
+
+# Check if shell is still alive
+if kill -0 "$SHELL_PID" 2>/dev/null; then
+    echo "DEBUG: Shell (PID $SHELL_PID) is running after 2s"
+else
+    echo "ERROR: Shell (PID $SHELL_PID) exited within 2 seconds!"
+    echo "--- Shell exit status (wait) ---"
+    wait "$SHELL_PID" 2>/dev/null
+    echo "--- Shell log ---"
+    cat "$SHELL_LOG" 2>/dev/null || true
+    echo "--- End shell log ---"
+fi
+
+# The graphical session ends when either essential process exits.
+set +e
+echo "DEBUG: Waiting for compositor (PID $COMPOSITOR_PID) or shell (PID $SHELL_PID) to exit..."
+wait -n "$COMPOSITOR_PID" "$SHELL_PID"
+STATUS=$?
+set -e
+echo "=== Session process exited with status $STATUS ==="
+
+# ── Log collection ───────────────────────────────────────────────────────────
+echo "=== Collecting debug logs ==="
+# Copy all logs to persistent storage for post-mortem analysis
+cp "$SESSION_LOG" "$NIRA_LOG_DIR/nira-session.log" 2>/dev/null || true
+cp "$COMPOSITOR_LOG" "$NIRA_LOG_DIR/nira-compositor.log" 2>/dev/null || true
+cp "$SHELL_LOG" "$NIRA_LOG_DIR/nira-shell.log" 2>/dev/null || true
+ls -la "$NIRA_LOG_DIR/" 2>&1 || true
+
+echo "=== DUMPING LOGS TO SERIAL ===" > /dev/ttyS0
+echo "--- SESSION LOG ---" > /dev/ttyS0
+cat "$SESSION_LOG" > /dev/ttyS0 2>/dev/null || true
+echo "--- COMPOSITOR LOG ---" > /dev/ttyS0
+head -200 "$COMPOSITOR_LOG" > /dev/ttyS0 2>/dev/null || true
+echo "--- SHELL LOG ---" > /dev/ttyS0
+head -200 "$SHELL_LOG" > /dev/ttyS0 2>/dev/null || true
+echo "==============================" > /dev/ttyS0
+exit "$STATUS"

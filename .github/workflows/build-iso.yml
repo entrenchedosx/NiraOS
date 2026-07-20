@@ -1,0 +1,66 @@
+name: NiraOS Image Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install image tooling
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm --needed \
+            base-devel cmake ninja rust protobuf grpc \
+            qt6-base qt6-declarative qt6-wayland \
+            mkosi systemd python git
+
+      - name: Run source gates
+        run: |
+          cargo test --locked --workspace
+          python -m unittest discover -s tests/integration -p 'test_*.py' -v
+
+      - name: Build bootable image
+        run: mkosi --force build
+
+      - name: Validate and checksum artifacts
+        run: |
+          test -s NiraOS.raw
+          test -s NiraOS.vmlinuz
+          test -s NiraOS.initrd
+          sha256sum NiraOS.raw NiraOS.vmlinuz NiraOS.initrd > NiraOS.sha256
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NiraOS-${{ github.ref_name }}
+          path: |
+            NiraOS.raw
+            NiraOS.vmlinuz
+            NiraOS.initrd
+            NiraOS.sha256
+          if-no-files-found: error
+
+      - name: Publish tagged release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            NiraOS.raw
+            NiraOS.vmlinuz
+            NiraOS.initrd
+            NiraOS.sha256
+          fail_on_unmatched_files: true

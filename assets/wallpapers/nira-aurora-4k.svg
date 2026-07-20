@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3840 2160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="auroraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#7000FF" stop-opacity="0" />
+    </linearGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="150" /></filter>
+  </defs>
+  <rect width="3840" height="2160" fill="#05070D" />
+  <path d="M -500 500 C 1000 0, 2000 2000, 4000 1000 L 4000 2500 L -500 2500 Z" fill="url(#auroraGrad)" filter="url(#blur)" />
+</svg>

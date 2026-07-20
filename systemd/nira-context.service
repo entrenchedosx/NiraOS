@@ -1,0 +1,12 @@
+[Unit]
+Description=NiraOS Context Broker
+Requires=nira-permission.service
+After=nira-permission.service
+Before=nira-ai.service
+
+[Service]
+ExecStart=/usr/bin/nira-context
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

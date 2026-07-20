@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package niraos.permissions.v1;
+
+service PermissionsService {
+    rpc RequestCapability (CapabilityRequest) returns (CapabilityResponse);
+}
+
+message CapabilityRequest {
+    string capability = 1;
+    string resource = 2;
+    string reason = 3;
+}
+
+message CapabilityResponse {
+    string decision = 1; // "allowed", "denied"
+    string scope = 2;    // "session", "always"
+}

@@ -1,0 +1,115 @@
+<RCC>
+    <qresource prefix="/nira/icons">
+        <!-- General application icons (SVG primary) -->
+        <file alias="calculator.svg">../../assets/icons/calculator.svg</file>
+        <file alias="computer.svg">../../assets/icons/computer.svg</file>
+        <file alias="desktop.svg">../../assets/icons/desktop.svg</file>
+        <file alias="file-document.svg">../../assets/icons/file-document.svg</file>
+        <file alias="folder-open.svg">../../assets/icons/folder-open.svg</file>
+        <file alias="lock-screen.svg">../../assets/icons/lock-screen.svg</file>
+        <file alias="login.svg">../../assets/icons/login.svg</file>
+        <file alias="network.svg">../../assets/icons/network.svg</file>
+        <file alias="package-manager.svg">../../assets/icons/package-manager.svg</file>
+        <file alias="restart.svg">../../assets/icons/restart.svg</file>
+        <file alias="settings.svg">../../assets/icons/settings.svg</file>
+        <file alias="shutdown.svg">../../assets/icons/shutdown.svg</file>
+        <file alias="sleep.svg">../../assets/icons/sleep.svg</file>
+        <file alias="software-store.svg">../../assets/icons/software-store.svg</file>
+        <file alias="start-menu.svg">../../assets/icons/start-menu.svg</file>
+        <file alias="task-manager.svg">../../assets/icons/task-manager.svg</file>
+        <file alias="terminal.svg">../../assets/icons/terminal.svg</file>
+        <file alias="trash-empty.svg">../../assets/icons/trash-empty.svg</file>
+        <file alias="trash-full.svg">../../assets/icons/trash-full.svg</file>
+        <file alias="usb.svg">../../assets/icons/usb.svg</file>
+
+        <!-- Standard freedesktop icon name aliases -->
+        <file alias="user-trash.svg">../../assets/icons/trash-empty.svg</file>
+        <file alias="accessories-text-editor.svg">../../assets/notepad/app-icon.svg</file>
+        <file alias="utilities-terminal.svg">../../assets/icons/terminal.svg</file>
+        <file alias="preferences-system.svg">../../assets/icons/settings.svg</file>
+        <file alias="system-file-manager.svg">../../assets/filemanager/folder.svg</file>
+        <file alias="drive-harddisk.svg">../../assets/icons/computer.svg</file>
+        <file alias="user-home.svg">../../assets/filemanager/sidebar-home.svg</file>
+        <file alias="user-desktop.svg">../../assets/icons/desktop.svg</file>
+
+        <!-- PNG fallbacks at 48px (the most common shell icon size) -->
+        <file alias="calculator-48.png">../../assets/icons/calculator-48.png</file>
+        <file alias="computer-48.png">../../assets/icons/computer-48.png</file>
+        <file alias="desktop-48.png">../../assets/icons/desktop-48.png</file>
+        <file alias="file-document-48.png">../../assets/icons/file-document-48.png</file>
+        <file alias="folder-open-48.png">../../assets/icons/folder-open-48.png</file>
+        <file alias="lock-screen-48.png">../../assets/icons/lock-screen-48.png</file>
+        <file alias="login-48.png">../../assets/icons/login-48.png</file>
+        <file alias="network-48.png">../../assets/icons/network-48.png</file>
+        <file alias="package-manager-48.png">../../assets/icons/package-manager-48.png</file>
+        <file alias="restart-48.png">../../assets/icons/restart-48.png</file>
+        <file alias="settings-48.png">../../assets/icons/settings-48.png</file>
+        <file alias="shutdown-48.png">../../assets/icons/shutdown-48.png</file>
+        <file alias="sleep-48.png">../../assets/icons/sleep-48.png</file>
+        <file alias="software-store-48.png">../../assets/icons/software-store-48.png</file>
+        <file alias="start-menu-48.png">../../assets/icons/start-menu-48.png</file>
+        <file alias="task-manager-48.png">../../assets/icons/task-manager-48.png</file>
+        <file alias="terminal-48.png">../../assets/icons/terminal-48.png</file>
+        <file alias="trash-empty-48.png">../../assets/icons/trash-empty-48.png</file>
+        <file alias="trash-full-48.png">../../assets/icons/trash-full-48.png</file>
+        <file alias="usb-48.png">../../assets/icons/usb-48.png</file>
+        <file alias="user-trash-48.png">../../assets/icons/trash-empty-48.png</file>
+        <file alias="utilities-terminal-48.png">../../assets/icons/terminal-48.png</file>
+        <file alias="preferences-system-48.png">../../assets/icons/settings-48.png</file>
+        <file alias="system-file-manager-48.png">../../assets/filemanager/folder-48.png</file>
+    </qresource>
+
+    <qresource prefix="/nira/nira">
+        <!-- Nira Intelligence brand icons -->
+        <file alias="assistant-logo.svg">../../assets/nira/assistant-logo.svg</file>
+        <file alias="chat-bubble.svg">../../assets/nira/chat-bubble.svg</file>
+        <file alias="mic-off.svg">../../assets/nira/mic-off.svg</file>
+        <file alias="mic-on.svg">../../assets/nira/mic-on.svg</file>
+        <file alias="assistant-logo-48.png">../../assets/nira/assistant-logo-48.png</file>
+        <file alias="chat-bubble-48.png">../../assets/nira/chat-bubble-48.png</file>
+        <file alias="mic-off-48.png">../../assets/nira/mic-off-48.png</file>
+        <file alias="mic-on-48.png">../../assets/nira/mic-on-48.png</file>
+    </qresource>
+
+    <qresource prefix="/nira/desktop">
+        <!-- Desktop-specific overlays -->
+        <file alias="selection-rect.svg">../../assets/desktop/selection-rect.svg</file>
+        <file alias="shortcut-overlay.svg">../../assets/desktop/shortcut-overlay.svg</file>
+        <file alias="shortcut-overlay-48.png">../../assets/desktop/shortcut-overlay-48.png</file>
+    </qresource>
+
+    <qresource prefix="/nira/filemanager">
+        <!-- File-manager icons used by the desktop icon view (folder, etc.) -->
+        <file alias="folder.svg">../../assets/filemanager/folder.svg</file>
+        <file alias="empty-folder.svg">../../assets/filemanager/empty-folder.svg</file>
+        <file alias="folder-48.png">../../assets/filemanager/folder-48.png</file>
+    </qresource>
+
+    <qresource prefix="/nira/system-ui">
+        <!-- System UI controls -->
+        <file alias="checkbox-off.svg">../../assets/system-ui/checkbox-off.svg</file>
+        <file alias="checkbox-on.svg">../../assets/system-ui/checkbox-on.svg</file>
+        <file alias="radio-off.svg">../../assets/system-ui/radio-off.svg</file>
+        <file alias="radio-on.svg">../../assets/system-ui/radio-on.svg</file>
+        <file alias="toggle-off.svg">../../assets/system-ui/toggle-off.svg</file>
+        <file alias="toggle-on.svg">../../assets/system-ui/toggle-on.svg</file>
+        <file alias="window-close.svg">../../assets/system-ui/window-close.svg</file>
+        <file alias="window-max.svg">../../assets/system-ui/window-max.svg</file>
+        <file alias="window-min.svg">../../assets/system-ui/window-min.svg</file>
+        <file alias="window-restore.svg">../../assets/system-ui/window-restore.svg</file>
+    </qresource>
+
+    <qresource prefix="/nira/animations">
+        <!-- Animation SVGs -->
+        <file alias="boot-spinner.svg">../../assets/animations/boot-spinner.svg</file>
+        <file alias="thinking-indicator.svg">../../assets/animations/thinking-indicator.svg</file>
+    </qresource>
+
+    <qresource prefix="/nira/brand">
+        <!-- Brand assets shipped from mkosi.extra; bundled here too so the
+             shell renders correctly when run outside the installed image
+             (e.g. during development on a build host). -->
+        <file alias="nira-logo.svg">../../mkosi/mkosi.extra/usr/share/niraos/nira-logo.svg</file>
+        <file alias="logo.png">../../mkosi/mkosi.extra/usr/share/niraos/logo.png</file>
+    </qresource>
+</RCC>

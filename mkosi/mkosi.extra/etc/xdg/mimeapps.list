@@ -1,0 +1,15 @@
+[Default Applications]
+text/html=org.kde.falkon.desktop
+application/xhtml+xml=org.kde.falkon.desktop
+x-scheme-handler/http=org.kde.falkon.desktop
+x-scheme-handler/https=org.kde.falkon.desktop
+text/plain=io.niraos.Notepad.desktop
+inode/directory=io.niraos.Files.desktop
+
+[Added Associations]
+text/html=org.kde.falkon.desktop
+application/xhtml+xml=org.kde.falkon.desktop
+x-scheme-handler/http=org.kde.falkon.desktop
+x-scheme-handler/https=org.kde.falkon.desktop
+text/plain=io.niraos.Notepad.desktop
+inode/directory=io.niraos.Files.desktop
