@@ -47,8 +47,17 @@ for bin in nira-compositor nira-shell; do
 done
 
 # ── Runtime directory check ──────────────────────────────────────────────────
+# pam_systemd.so starts user-runtime-dir@UID asynchronously; wait for it
+# instead of racing the creation of /run/user/UID.
+echo "DEBUG: Waiting for XDG_RUNTIME_DIR..."
+for _i in $(seq 1 50); do
+    if [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -d "$XDG_RUNTIME_DIR" ]; then
+        break
+    fi
+    sleep 0.1
+done
 if [ -z "${XDG_RUNTIME_DIR:-}" ] || [ ! -d "$XDG_RUNTIME_DIR" ]; then
-    echo "ERROR: XDG_RUNTIME_DIR is not available; refusing to start."
+    echo "ERROR: XDG_RUNTIME_DIR is not available after 5s; refusing to start."
     echo "  XDG_RUNTIME_DIR='${XDG_RUNTIME_DIR:-<unset>}'"
     exit 1
 fi
@@ -82,6 +91,7 @@ fi
 echo "DEBUG: Loading input drivers..."
 modprobe psmouse 2>&1 || true
 modprobe virtio_input 2>&1 || true
+modprobe virtio_gpu 2>&1 || true
 echo "DEBUG: Input devices: $(ls /dev/input/ 2>&1)"
 
 # ── DRM device check ────────────────────────────────────────────────────────

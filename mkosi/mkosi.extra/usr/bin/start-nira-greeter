@@ -28,11 +28,13 @@ if [ "$VIRT_TYPE" != "none" ]; then
     export QT_SCALE_FACTOR=1
 fi
 
-# Ensure the DRM driver (bochs for QEMU VGA) is loaded before trying eglfs.
+# Ensure the DRM driver is loaded before trying eglfs.
+# bochs: for QEMU VGA (-vga std / bochs).  virtio_gpu: for virtio-gpu-pci.
 # The module is on the rootfs, not in the initrd, so udev may not have loaded
 # it by the time greetd starts the greeter.  modprobe is idempotent.
 echo "DEBUG: Loading DRM/KMS driver..."
 modprobe bochs 2>&1 || echo "WARNING: modprobe bochs failed (might be built-in)"
+modprobe virtio_gpu 2>&1 || echo "WARNING: modprobe virtio_gpu failed (might be built-in)"
 
 # Load input drivers — psmouse for PS/2 fallback, virtio_input for
 # virtio-tablet/virtio-keyboard absolute positioning.  Without these,
