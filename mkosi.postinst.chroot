@@ -87,6 +87,10 @@ chmod 0644 /usr/lib/systemd/user/*.service 2>/dev/null || true
 # a distribution preset disables it.  Mask the boot-blocking helper so the
 # later mkosi preset pass cannot re-enable it.
 systemctl mask NetworkManager-wait-online.service
+# Mask getty@tty1 to prevent systemd-getty-generator from conflicting
+# with greetd on VT1. Even with the preset disabling getty@*.service,
+# the kernel-level console generator can re-create it at runtime.
+systemctl mask getty@tty1.service
 
 # NOTE: ordinary service enablement is declared in
 # /usr/lib/systemd/system-preset/10-nira.preset (single source of truth).
