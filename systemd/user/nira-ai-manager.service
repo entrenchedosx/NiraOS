@@ -3,6 +3,7 @@ Description=NiraOS AI Lifecycle Manager
 BindsTo=nira-shell.service
 After=nira-shell.service
 Requires=nira-ai.service
+# Not enabled via systemd — launched by start-nira-session after the shell is ready.
 
 [Service]
 ExecStart=/usr/bin/nira-ai-manager
@@ -16,6 +17,3 @@ NoNewPrivileges=true
 ProtectSystem=strict
 PrivateTmp=true
 MemoryDenyWriteExecute=true
-
-[Install]
-WantedBy=graphical-session.target

@@ -1,10 +1,9 @@
 [Unit]
 Description=NiraOS Action Manager (Automation Engine)
+# This service runs at the SYSTEM level (nira-action.service in scripts/systemd/).
+# The user-level instance would conflict by binding the same /run/niraos/actions.sock.
 
 [Service]
 ExecStart=/usr/bin/nira-action
 Restart=on-failure
 RestartSec=5s
-
-[Install]
-WantedBy=default.target

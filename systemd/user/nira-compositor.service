@@ -1,11 +1,10 @@
 [Unit]
 Description=Nira Wayland Compositor
 BindsTo=graphical-session.target
+# Not enabled via systemd — launched manually by start-nira-session
+# because it requires DRM/eglfs_kms setup before execution.
 
 [Service]
 ExecStart=/usr/bin/nira-compositor
 Restart=on-failure
 RestartSec=5s
-
-[Install]
-WantedBy=graphical-session.target

@@ -79,6 +79,8 @@ chmod 0644 /etc/systemd/logind.conf.d/niraos.conf
 chmod 0644 /etc/pam.d/systemd-user
 chmod 0644 /etc/systemd/system/NetworkManager.service.d/10-niraos-install.conf
 chmod 0644 /usr/lib/systemd/system-preset/10-nira.preset
+# User-level unit files sourced from NTFS may have spurious execute bits
+chmod 0644 /usr/lib/systemd/user/*.service 2>/dev/null || true
 
 # A desktop must remain usable without a network.  Arch's NetworkManager unit
 # can pull wait-online back in through vendor installation metadata even when
