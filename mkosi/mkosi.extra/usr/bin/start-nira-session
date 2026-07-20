@@ -20,7 +20,12 @@ export QT_MESSAGE_PATTERN="[%{time h:mm:ss.zzz} %{type} %{category}] %{message}"
 # ── Per-process log files ────────────────────────────────────────────────────
 # Use persistent /var/log/niraos/ from the start so logs survive the session
 # cleanup of /run/user/UID (tmpfs wiped by systemd on session close).
+# Fall back to /tmp if the persistent directory is not writable.
 LOG_DIR="/var/log/niraos"
+if [ ! -w "$LOG_DIR" ]; then
+    LOG_DIR="/tmp/niraos-logs"
+fi
+mkdir -p "$LOG_DIR" 2>/dev/null || LOG_DIR="/tmp"
 SESSION_LOG="$LOG_DIR/nira-session.log"
 COMPOSITOR_LOG="$LOG_DIR/nira-compositor.log"
 SHELL_LOG="$LOG_DIR/nira-shell.log"

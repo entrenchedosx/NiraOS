@@ -52,6 +52,7 @@ fi
 usermod -aG nira-ipc nira-ai
 
 install -d -o root -g root -m 0755 /var/lib/niraos
+install -d -o root -g root -m 0777 /var/log/niraos
 install -d -o nira-ai -g nira-ai -m 0750 /var/lib/niraos/models
 # Fix model file permissions if present
 if [ -f /var/lib/niraos/models/Phi-4-mini-instruct-Q4_K_M.gguf ]; then
