@@ -99,7 +99,6 @@ systemctl mask NetworkManager-wait-online.service
 install -d -m 0755 /etc/systemd/user/default.target.wants
 ln -sf /usr/lib/systemd/user/nira-notification.service /etc/systemd/user/default.target.wants/nira-notification.service
 ln -sf /usr/lib/systemd/user/nira-settings.service    /etc/systemd/user/default.target.wants/nira-settings.service
-ln -sf /usr/lib/systemd/user/nira-action.service      /etc/systemd/user/default.target.wants/nira-action.service
 
 # NOTE: We DO NOT enable nira-compositor or nira-shell as systemd services!
 # They are launched by the user's Wayland session wrapper (start-nira-session)

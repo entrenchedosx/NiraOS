@@ -34,7 +34,7 @@ cp "$CARGO_TARGET_DIR/release/context-broker"       "$DESTDIR/usr/bin/nira-conte
 cp "$CARGO_TARGET_DIR/release/permission-manager"   "$DESTDIR/usr/bin/nira-permission"
 cp "$CARGO_TARGET_DIR/release/action-manager"       "$DESTDIR/usr/bin/nira-action"
 cp "$CARGO_TARGET_DIR/release/model-manager"        "$DESTDIR/usr/bin/nira-model"
-cp "$CARGO_TARGET_DIR/release/settings-service"     "$DESTDIR/usr/bin/nira-settings"
+cp "$CARGO_TARGET_DIR/release/settings-service"     "$DESTDIR/usr/bin/nira-settingsd"
 cp "$CARGO_TARGET_DIR/release/hardware-service"     "$DESTDIR/usr/bin/nira-hardware"
 cp "$CARGO_TARGET_DIR/release/notification-service" "$DESTDIR/usr/bin/nira-notification"
 cp "$CARGO_TARGET_DIR/release/nira-debug"         "$DESTDIR/usr/bin/nira-debug"

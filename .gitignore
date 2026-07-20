@@ -43,6 +43,7 @@ node_modules/
 .idea/
 
 # QEMU boot evidence (generated during testing)
+/.boot-log.txt
 boot_output.txt
 boot_logs.txt
 greetd_output.txt

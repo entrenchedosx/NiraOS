@@ -1,8 +1,9 @@
 [Unit]
 Description=NiraOS Settings Service
+After=graphical-session.target
 
 [Service]
-ExecStart=/usr/bin/nira-settings
+ExecStart=/usr/bin/nira-settingsd
 Restart=on-failure
 RestartSec=5s
 
