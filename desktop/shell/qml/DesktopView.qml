@@ -234,7 +234,6 @@ Item {
                 // beyond ~8px so a click doesn't accidentally begin one.
                 drag.threshold: 8
                 drag.target: iconDelegate
-                drag.minimumDuration: 100
             }
         }
 

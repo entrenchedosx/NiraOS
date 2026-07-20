@@ -31,8 +31,9 @@ COMPOSITOR_LOG="$LOG_DIR/nira-compositor.log"
 SHELL_LOG="$LOG_DIR/nira-shell.log"
 SYSLOG_TAG="nira-session"
 
-# Everything this script prints goes to the journal and session log.
-exec > >(tee -a "$SESSION_LOG" | systemd-cat -t "$SYSLOG_TAG") 2>&1
+# Write all output to the session log file and journal.
+# Simple append redirect avoids process-substitution / systemd-cat failures.
+exec >> "$SESSION_LOG" 2>&1
 echo "=== NiraOS session starting at $(date) ==="
 echo "=== DEBUG: Log directory: $LOG_DIR ==="
 echo "=== DEBUG: Nira log dir: $NIRA_LOG_DIR ==="
